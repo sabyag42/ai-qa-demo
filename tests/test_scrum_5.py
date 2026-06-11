@@ -21,63 +21,82 @@ class LoginPage:
         return self.error_message.inner_text()
 
 @pytest.mark.regression
-class TestLogin:
-    
-    @pytest.mark.smoke
-    def test_successful_login(self, page: Page):
+def test_successful_login(playwright):
+    with playwright.chromium.launch() as browser:
+        page = browser.new_page()
         login_page = LoginPage(page)
         login_page.navigate()
         login_page.login("standard_user", "secret_sauce")
         assert page.url == "https://www.saucedemo.com/inventory.html"
+        page.close()
 
-    def test_login_with_invalid_credentials(self, page: Page):
+@pytest.mark.smoke
+@pytest.mark.regression
+def test_login_with_invalid_credentials(playwright):
+    with playwright.chromium.launch() as browser:
+        page = browser.new_page()
         login_page = LoginPage(page)
         login_page.navigate()
         login_page.login("invalid_user", "invalid_password")
         assert login_page.get_error_message() == "Epic sadface: Username and password do not match any user in this service"
+        page.close()
 
-    def test_login_with_empty_fields(self, page: Page):
+@pytest.mark.regression
+def test_login_with_empty_fields(playwright):
+    with playwright.chromium.launch() as browser:
+        page = browser.new_page()
         login_page = LoginPage(page)
         login_page.navigate()
         login_page.login("", "")
         assert login_page.get_error_message() == "Epic sadface: Username is required"
+        page.close()
 
-    def test_login_with_locked_out_user(self, page: Page):
+@pytest.mark.regression
+def test_login_with_locked_out_user(playwright):
+    with playwright.chromium.launch() as browser:
+        page = browser.new_page()
         login_page = LoginPage(page)
         login_page.navigate()
         login_page.login("locked_out_user", "secret_sauce")
         assert login_page.get_error_message() == "Epic sadface: Sorry, this user has been locked out."
+        page.close()
 
-    def test_login_with_password_only(self, page: Page):
+@pytest.mark.regression
+def test_login_with_password_only(playwright):
+    with playwright.chromium.launch() as browser:
+        page = browser.new_page()
         login_page = LoginPage(page)
         login_page.navigate()
         login_page.login("", "secret_sauce")
         assert login_page.get_error_message() == "Epic sadface: Username is required"
+        page.close()
 
-    def test_login_with_username_only(self, page: Page):
+@pytest.mark.regression
+def test_login_with_username_only(playwright):
+    with playwright.chromium.launch() as browser:
+        page = browser.new_page()
         login_page = LoginPage(page)
         login_page.navigate()
         login_page.login("standard_user", "")
         assert login_page.get_error_message() == "Epic sadface: Password is required"
+        page.close()
 
-    def test_login_with_nonexistent_user(self, page: Page):
+@pytest.mark.regression
+def test_login_with_nonexistent_user(playwright):
+    with playwright.chromium.launch() as browser:
+        page = browser.new_page()
         login_page = LoginPage(page)
         login_page.navigate()
-        login_page.login("nonexistent_user", "some_password")
+        login_page.login("nonexistent_user", "password")
         assert login_page.get_error_message() == "Epic sadface: Username and password do not match any user in this service"
+        page.close()
 
-    def test_login_with_special_characters(self, page: Page):
+@pytest.mark.regression
+def test_login_with_special_characters(playwright):
+    with playwright.chromium.launch() as browser:
+        page = browser.new_page()
         login_page = LoginPage(page)
         login_page.navigate()
         login_page.login("!@#$%^&*", "!@#$%^&*")
         assert login_page.get_error_message() == "Epic sadface: Username and password do not match any user in this service"
-
-@pytest.fixture(scope="function")
-def page():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        context = browser.new_context()
-        page = context.new_page()
-        yield page
-        context.close()
-        browser.close()
+        page.close()
